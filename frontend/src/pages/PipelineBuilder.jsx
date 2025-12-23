@@ -28,7 +28,7 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
 
-const API_BASE_URL = 'https://testoo-zuvg.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const STEP_DEFS = [
   { title: 'Upload', description: 'Drop CSV/Excel data', icon: FiDatabase },
   { title: 'Preprocess', description: 'Choose target/features', icon: FiSliders },

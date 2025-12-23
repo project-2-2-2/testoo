@@ -4,6 +4,9 @@ from pydantic import BaseModel
 import os
 import pandas as pd
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -12,15 +15,12 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 
 app = FastAPI(title="OrangeFlow Backend", version="1.0.0")
 
+# Allow CORS for all origins in development and production for simplicity
+# In a strict production environment, you would restrict this to the frontend domain
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "https://testoo-tau.vercel.app/",
-    ],
-    allow_credentials=False,
+    allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

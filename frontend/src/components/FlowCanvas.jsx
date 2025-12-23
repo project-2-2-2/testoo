@@ -63,9 +63,17 @@ export default function FlowCanvas({
     return out;
   }, [nodes, nodeState.upload, nodeState.preprocess, nodeState.split, nodeState.train]);
 
+  const bottomBoundary = useMemo(() => Math.max(...nodes.map((n) => n.y + n.h)) + 40, [nodes]);
+  const minHeight = 180;
+  const height = Math.max(minHeight, bottomBoundary);
+
   return (
-    <div ref={wrapRef} className="flow-canvas glass-panel gradient-border relative rounded-3xl p-4">
-      <svg className="absolute inset-0 w-full h-full pointer-events-none">
+    <div
+      ref={wrapRef}
+      style={{ height }}
+      className="flow-canvas glass-panel gradient-border relative rounded-3xl p-4"
+    >
+      <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
         {edges.map((e, idx) => {
           const x1 = e.from.x + e.from.w;
           const y1 = e.from.y + e.from.h / 2;
