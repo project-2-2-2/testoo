@@ -203,6 +203,7 @@ def preprocess(payload: PreprocessPayload):
         
         X_final = pd.concat([X_num, X_cat], axis=1)
         X = X_final.values
+        feature_names = list(X_final.columns)
         
         # Cleanup intermediate dataframes
         del work_df, X_df, X_num, X_cat, X_final
@@ -212,7 +213,7 @@ def preprocess(payload: PreprocessPayload):
         STATE["y"] = y.values
         STATE["features"] = features
         STATE["target"] = target
-        STATE["feature_names"] = list(X_final.columns)
+        STATE["feature_names"] = feature_names
         STATE["X_train"] = None
         STATE["X_test"] = None
         STATE["y_train"] = None
