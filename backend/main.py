@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import gc
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
@@ -60,6 +61,11 @@ STATE = {
 }
 
 
+@app.get("/")
+def root():
+    return {"message": "OrangeFlow Backend is running. Go to /docs for API documentation."}
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -89,6 +95,12 @@ async def upload(file: UploadFile = File(...)):
                 df = pd.read_excel(bio, sheet_name=0, engine="openpyxl")
         if df.empty:
             raise HTTPException(status_code=400, detail="Dataset is empty")
+        
+        # Optimize memory: downcast floats to float32
+        fcols = df.select_dtypes('float').columns
+        if len(fcols) > 0:
+            df[fcols] = df[fcols].astype('float32')
+
         STATE["df"] = df
         STATE["X"] = None
         STATE["y"] = None
@@ -109,6 +121,8 @@ async def upload(file: UploadFile = File(...)):
             suggested = cand[0]
         else:
             suggested = cols[-1] if cols else None
+        
+        gc.collect()
         return {
             "rows": int(df.shape[0]),
             "columns": cols,
@@ -163,19 +177,36 @@ def preprocess(payload: PreprocessPayload):
         X_cat = X_df[sel_cat_cols] if len(sel_cat_cols) else pd.DataFrame(index=X_df.index)
 
         if len(sel_cat_cols):
+            # Safety check for high cardinality to prevent OOM
+            for c in sel_cat_cols:
+                if X_cat[c].nunique() > 50:
+                    raise HTTPException(
+                        status_code=400, 
+                        detail=f"Column '{c}' has too many unique values ({X_cat[c].nunique()}). Max allowed is 50 to prevent memory crash."
+                    )
             X_cat = X_cat.astype(str)
             X_cat = pd.get_dummies(X_cat, drop_first=False)
+            # Downcast dummies to int8
+            X_cat = X_cat.astype('int8')
+            
         if len(sel_num_cols):
+            # Ensure float32
+            X_num = X_num.astype('float32')
             if payload.scaling == "standard":
                 scaler = StandardScaler()
                 X_num_values = scaler.fit_transform(X_num.values)
-                X_num = pd.DataFrame(X_num_values, index=X_df.index, columns=sel_num_cols)
+                X_num = pd.DataFrame(X_num_values, index=X_df.index, columns=sel_num_cols, dtype='float32')
             elif payload.scaling == "minmax":
                 scaler = MinMaxScaler()
                 X_num_values = scaler.fit_transform(X_num.values)
-                X_num = pd.DataFrame(X_num_values, index=X_df.index, columns=sel_num_cols)
+                X_num = pd.DataFrame(X_num_values, index=X_df.index, columns=sel_num_cols, dtype='float32')
+        
         X_final = pd.concat([X_num, X_cat], axis=1)
         X = X_final.values
+        
+        # Cleanup intermediate dataframes
+        del work_df, X_df, X_num, X_cat, X_final
+        gc.collect()
 
         STATE["X"] = X
         STATE["y"] = y.values
@@ -254,7 +285,7 @@ def train(payload: TrainPayload):
         }
         if payload.model_type == "tree":
             try:
-                import matplotlib.pyplot as plt
+                # matplotlib imported globally
                 from io import BytesIO
 
                 fig, ax = plt.subplots(figsize=(14, 8))
@@ -279,4 +310,3 @@ def train(payload: TrainPayload):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
