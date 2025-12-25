@@ -14,7 +14,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Router>
         <div className="min-h-screen bg-slate-950 text-slate-100">
+         
           <Navbar />
+            
           <div className="flex">
             <Sidebar />
             <main className="flex-1 min-h-screen pt-24 pb-10 px-4 sm:px-6 lg:px-10 md:ml-64">

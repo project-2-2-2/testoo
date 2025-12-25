@@ -30,7 +30,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Le
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const STEP_DEFS = [
-  { title: 'Upload', description: 'Drop CSV/Excel data', icon: FiDatabase },
+  { title: 'Upload', description: 'Drop CSV/Excel data.', icon: FiDatabase },
   { title: 'Preprocess', description: 'Choose target/features', icon: FiSliders },
   { title: 'Split', description: 'Train/Test settings', icon: FiTarget },
   { title: 'Train', description: 'Select & tune model', icon: FiCpu },
@@ -371,7 +371,8 @@ const UploadStep = ({ selectedFile, previewData, onUpload }) => (
         <>
           <FiUpload className="text-4xl text-brand-300" />
           <p className="mt-4 text-lg font-semibold">Drop your dataset</p>
-          <p className="text-sm text-white/60">CSV or Excel  Drag & drop or browse</p>
+          <p className="text-sm text-white/60">CSV or Excel  Drag & drop or browse.</p>
+          <h2>Please wait for 2 to 4 minutes after uploading csv as it needs to fetch from the backend</h2>
         </>
       )}
     </label>
