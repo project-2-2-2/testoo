@@ -15,6 +15,11 @@ function App() {
       <Router>
         <div className="min-h-screen bg-slate-950 text-slate-100">
           <Navbar />
+          <marquee><h1>
+           Please wait for 5 minutes after intital upload as it needs to load from backend
+           Once first file is uploaded, you will get pop up in the side
+           </h1>
+           </marquee>
           <div className="flex">
             <Sidebar />
             <main className="flex-1 min-h-screen pt-24 pb-10 px-4 sm:px-6 lg:px-10 md:ml-64">
